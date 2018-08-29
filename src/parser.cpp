@@ -48,24 +48,28 @@ void Parser::ParseFile(string _inputFile)
     ifstream ifs;
     ifs.open(_inputFile);	
     if (ifs.is_open()){
-        int doc_block;
-        string title, word, doc_id;		
+        bool is_title = true;
+        string title, word, doc_id, line_content;		
 		istringstream iss;
 
         getline(ifs, doc_id);
-        getline(ifs, title);
-
+        
         cout<<"doc_id: "<<doc_id <<endl;
-        cout<<"title: "<<title <<endl;        
 
-        while (!ifs.eof()) {            
-            ifs >> word;
-            PreProcessWord(word);git 
-			if (!IsStopWord(word) && !word.empty()) {
-			    cout<<" " <<l;
-                //Ready for insert
-			} 
-        }
+        //while (!ifs.eof()) {
+            do {
+                getline(ifs, line_content);
+                is_title = false; //Second line is title, should weigth more
+			    iss.str(line_content);
+			    while (iss >> word) {
+				    PreProcessWord(word);
+				    if (!IsStopWord(word) && !word.empty()) {
+			            //cout<< " " <<word;
+				    }
+			    }
+                iss.clear(); 
+            }while(!ifs.eof());
+        //}
         cout<<endl;
         ifs.close();            
 	}
@@ -112,19 +116,19 @@ bool Parser::TakeOffMark(char &sign) {
 
 void Parser::PreProcessWord(string &word)
 {
-    //cout<<"word in: "<<word<<endl;
+    cout<<"word in: "<<word <<" "<<word.length()<<endl;
     transform(word.begin(), word.end(), word.begin(), ::tolower);
 	for (int i = 0; i < word.length(); ++i) {
 		if (IsMark(word[i])) {
-			word.erase(i, 1);
+            word.erase(i, 1);
 			while (i < word.length() && !TakeOffMark(word[i])) {
 				word.erase(i, 1);
 			}
-		} if (i < word.length() && !isalpha(word[i]) && !isdigit(word[i])) {
-			word.erase(i, 1);
+		} while (i < word.length() && !isalpha(word[i]) && !isdigit(word[i])) {
+            word.erase(i, 1);
 		}
 	}
-    //cout<<"word out: "<<word<<endl;	
+    cout<<"word out: "<<word<<endl;	
 }
 
 Parser::~Parser()
