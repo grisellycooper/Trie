@@ -38,38 +38,31 @@ bool Parser::LoadStopWords(string fileName)
 	return true;
 }
 
-void Parser::CleanWordList()
-{
-    wordsList = {};    
-}
-
-void Parser::ParseFile(string _inputFile)
+vector<string> Parser::ParseFile(string _inputFile)
 {    
     ifstream ifs;
-    ifs.open(_inputFile);	
+    vector<string> wordsList;
+    ifs.open(_inputFile);    
     if (ifs.is_open()){
         bool is_title = true;
         string title, word, doc_id, line_content;		
 		istringstream iss;
+        getline(ifs, doc_id);                
 
-        getline(ifs, doc_id);
-        
-        cout<<"doc_id: "<<doc_id <<endl;
-
-        //while (!ifs.eof()) {
-            do {
-                getline(ifs, line_content);
-                is_title = false; //Second line is title, should weigth more
-			    iss.str(line_content);
-			    while (iss >> word) {
-				    PreProcessWord(word);
-				    if (!IsStopWord(word) && !word.empty()) {
-			            //cout<< " " <<word;
-				    }
+        do {
+            getline(ifs, line_content);
+            is_title = false; //Second line is title, should weigth more
+            iss.str(line_content);
+		    while (iss >> word) {
+			    PreProcessWord(word);
+                //Save Word in list
+			    if (!IsStopWord(word) && !word.empty()) {
+		            wordsList.push_back(word);
 			    }
-                iss.clear(); 
-            }while(!ifs.eof());
-        //}
+		    }
+            iss.clear(); 
+        }while(!ifs.eof());
+
         cout<<endl;
         ifs.close();            
 	}
@@ -77,7 +70,8 @@ void Parser::ParseFile(string _inputFile)
         cout<<"ERROR opening the file" <<endl;        
     }	
 
-	ifs.close();
+	ifs.close();   
+    return wordsList; 
 }
 
 bool Parser::IsStopWord(string word){
@@ -116,7 +110,7 @@ bool Parser::TakeOffMark(char &sign) {
 
 void Parser::PreProcessWord(string &word)
 {
-    cout<<"word in: "<<word <<" "<<word.length()<<endl;
+    //cout<<"word in: "<<word <<" "<<word.length()<<endl;
     transform(word.begin(), word.end(), word.begin(), ::tolower);
 	for (int i = 0; i < word.length(); ++i) {
 		if (IsMark(word[i])) {
@@ -128,7 +122,7 @@ void Parser::PreProcessWord(string &word)
             word.erase(i, 1);
 		}
 	}
-    cout<<"word out: "<<word<<endl;	
+    //cout<<"word out: "<<word<<endl;	
 }
 
 Parser::~Parser()
